@@ -1,0 +1,17 @@
+{
+    "C_Cpp.errorSquiggles": "Enabled",
+    "files.associations": {
+        "memory.h": "c",
+        "thread.h": "c",
+        "sync.h": "c",
+        "console.h": "c",
+        "interrupt.h": "c",
+        "global.h": "c",
+        "process.h": "c",
+        "stdint.h": "c",
+        "bitmap.h": "c"
+    },
+    "editor.fontSize": 16,
+    "debug.console.fontSize": 16,
+    "terminal.integrated.fontSize": 18
+}
