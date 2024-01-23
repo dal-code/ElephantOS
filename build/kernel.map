@@ -143,7 +143,7 @@ LOAD build/process.o
 .plt.sec
  *(.plt.sec)
 
-.text           0x00000000c0001500     0x3365
+.text           0x00000000c0001500     0x3361
  *(.text.unlikely .text.*_unlikely .text.unlikely.*)
  *(.text.exit .text.exit.*)
  *(.text.startup .text.startup.*)
@@ -240,21 +240,22 @@ LOAD build/process.o
                 0x00000000c0003d79                console_put_int
  .text          0x00000000c0003d96      0x2ec build/keyboard.o
                 0x00000000c0004042                keyboard_init
- .text          0x00000000c0004082      0x2f1 build/ioqueue.o
+ .text          0x00000000c0004082      0x2ed build/ioqueue.o
                 0x00000000c0004082                ioqueue_init
-                0x00000000c00040df                ioq_full
-                0x00000000c0004215                ioq_getchar
-                0x00000000c00042c3                ioq_putchar
- .text          0x00000000c0004373      0x1a9 build/tss.o
-                0x00000000c0004373                update_tss_esp
-                0x00000000c00043ee                tss_init
- .text          0x00000000c000451c      0x349 build/process.o
-                0x00000000c000451c                start_process
-                0x00000000c0004612                page_dir_activate
-                0x00000000c0004642                process_activate
-                0x00000000c0004694                create_page_dir
-                0x00000000c0004705                create_user_vaddr_bitmap
-                0x00000000c0004749                process_execute
+                0x00000000c00040db                ioq_full
+                0x00000000c000412c                ioq_empty
+                0x00000000c0004211                ioq_getchar
+                0x00000000c00042bf                ioq_putchar
+ .text          0x00000000c000436f      0x1a9 build/tss.o
+                0x00000000c000436f                update_tss_esp
+                0x00000000c00043ea                tss_init
+ .text          0x00000000c0004518      0x349 build/process.o
+                0x00000000c0004518                start_process
+                0x00000000c000460e                page_dir_activate
+                0x00000000c000463e                process_activate
+                0x00000000c0004690                create_page_dir
+                0x00000000c0004701                create_user_vaddr_bitmap
+                0x00000000c0004745                process_execute
  *(.gnu.warning)
 
 .fini
@@ -263,28 +264,28 @@ LOAD build/process.o
                 [!provide]                        PROVIDE (_etext = .)
                 [!provide]                        PROVIDE (etext = .)
 
-.rodata         0x00000000c0004868      0xc69
+.rodata         0x00000000c0004864      0xc69
  *(.rodata .rodata.* .gnu.linkonce.r.*)
- .rodata        0x00000000c0004868       0x23 build/main.o
- .rodata        0x00000000c000488b        0xa build/init.o
- *fill*         0x00000000c0004895        0x3 
- .rodata        0x00000000c0004898      0x2be build/interrupt.o
- *fill*         0x00000000c0004b56        0x2 
- .rodata        0x00000000c0004b58       0x6b build/timer.o
- .rodata        0x00000000c0004bc3       0x3f build/debug.o
- *fill*         0x00000000c0004c02        0x2 
- .rodata        0x00000000c0004c04      0x1e1 build/memory.o
- .rodata        0x00000000c0004de5       0xb9 build/string.o
- *fill*         0x00000000c0004e9e        0x2 
- .rodata        0x00000000c0004ea0       0x68 build/bitmap.o
- .rodata        0x00000000c0004f08      0x2be build/thread.o
- *fill*         0x00000000c00051c6        0x2 
- .rodata        0x00000000c00051c8      0x12f build/sync.o
- .rodata        0x00000000c00052f7       0x36 build/keyboard.o
- *fill*         0x00000000c000532d        0x3 
- .rodata        0x00000000c0005330       0x9d build/ioqueue.o
- .rodata        0x00000000c00053cd       0x27 build/tss.o
- .rodata        0x00000000c00053f4       0xdd build/process.o
+ .rodata        0x00000000c0004864       0x23 build/main.o
+ .rodata        0x00000000c0004887        0xa build/init.o
+ *fill*         0x00000000c0004891        0x3 
+ .rodata        0x00000000c0004894      0x2be build/interrupt.o
+ *fill*         0x00000000c0004b52        0x2 
+ .rodata        0x00000000c0004b54       0x6b build/timer.o
+ .rodata        0x00000000c0004bbf       0x3f build/debug.o
+ *fill*         0x00000000c0004bfe        0x2 
+ .rodata        0x00000000c0004c00      0x1e1 build/memory.o
+ .rodata        0x00000000c0004de1       0xb9 build/string.o
+ *fill*         0x00000000c0004e9a        0x2 
+ .rodata        0x00000000c0004e9c       0x68 build/bitmap.o
+ .rodata        0x00000000c0004f04      0x2be build/thread.o
+ *fill*         0x00000000c00051c2        0x2 
+ .rodata        0x00000000c00051c4      0x12f build/sync.o
+ .rodata        0x00000000c00052f3       0x36 build/keyboard.o
+ *fill*         0x00000000c0005329        0x3 
+ .rodata        0x00000000c000532c       0x9d build/ioqueue.o
+ .rodata        0x00000000c00053c9       0x27 build/tss.o
+ .rodata        0x00000000c00053f0       0xdd build/process.o
 
 .rodata1
  *(.rodata1)
@@ -305,7 +306,7 @@ LOAD build/process.o
 
 .exception_ranges
  *(.exception_ranges .exception_ranges*)
-                0x00000000c00064d1                . = DATA_SEGMENT_ALIGN (CONSTANT (MAXPAGESIZE), CONSTANT (COMMONPAGESIZE))
+                0x00000000c00064cd                . = DATA_SEGMENT_ALIGN (CONSTANT (MAXPAGESIZE), CONSTANT (COMMONPAGESIZE))
 
 .eh_frame
  *(.eh_frame)
@@ -327,18 +328,18 @@ LOAD build/process.o
  *(.tbss .tbss.* .gnu.linkonce.tb.*)
  *(.tcommon)
 
-.preinit_array  0x00000000c00064d1        0x0
+.preinit_array  0x00000000c00064cd        0x0
                 [!provide]                        PROVIDE (__preinit_array_start = .)
  *(.preinit_array)
                 [!provide]                        PROVIDE (__preinit_array_end = .)
 
-.init_array     0x00000000c00064d1        0x0
+.init_array     0x00000000c00064cd        0x0
                 [!provide]                        PROVIDE (__init_array_start = .)
  *(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*))
  *(.init_array EXCLUDE_FILE(*crtend?.o *crtend.o *crtbegin?.o *crtbegin.o) .ctors)
                 [!provide]                        PROVIDE (__init_array_end = .)
 
-.fini_array     0x00000000c00064d1        0x0
+.fini_array     0x00000000c00064cd        0x0
                 [!provide]                        PROVIDE (__fini_array_start = .)
  *(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*))
  *(.fini_array EXCLUDE_FILE(*crtend?.o *crtend.o *crtbegin?.o *crtbegin.o) .dtors)
@@ -368,17 +369,17 @@ LOAD build/process.o
 .dynamic
  *(.dynamic)
 
-.got            0x00000000c00064d4        0x0
+.got            0x00000000c00064d0        0x0
  *(.got)
- .got           0x00000000c00064d4        0x0 build/main.o
+ .got           0x00000000c00064d0        0x0 build/main.o
  *(.igot)
-                0x00000000c00064d4                . = DATA_SEGMENT_RELRO_END (., (SIZEOF (.got.plt) >= 0xc)?0xc:0x0)
+                0x00000000c00064d0                . = DATA_SEGMENT_RELRO_END (., (SIZEOF (.got.plt) >= 0xc)?0xc:0x0)
 
-.got.plt        0x00000000c00064d4        0x0
+.got.plt        0x00000000c00064d0        0x0
  *(.got.plt)
- .got.plt       0x00000000c00064d4        0x0 build/main.o
+ .got.plt       0x00000000c00064d0        0x0 build/main.o
  *(.igot.plt)
- .igot.plt      0x00000000c00064d4        0x0 build/main.o
+ .igot.plt      0x00000000c00064d0        0x0 build/main.o
 
 .data           0x00000000c00064e0      0x136
  *(.data .data.* .gnu.linkonce.d.*)

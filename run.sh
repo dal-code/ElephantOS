@@ -1,15 +1,15 @@
 #!/bin/bash/
-nasm -I include/ -o boot/loader.bin boot/loader.S
-dd if=/home/qing/bochs/boot/loader.bin of=/home/qing/bochs/hd60M.img bs=512 cou\
-nt=4 seek=2 conv=notrunc
-
-nasm -f elf -o lib/kernel/print.o lib/kernel/print.asm
-
-gcc -m32 -I lib/kernel -c -o kernel/main.o kernel/main.c
-
-ld -m elf_i386 -Ttext 0xc0001500 -e main -o kernel/kernel.bin kernel/main.o lib/kernel/print.o
-dd if=/home/qing/bochs/kernel/kernel.bin of=/home/qing/bochs/hd60M.img bs=512 c\
-ount=200 seek=9 conv=notrunc
+# MBR:
+nasm -I boot/include/ -o boot/mbr.bin boot/mbr.S
+# 写入磁盘
+dd if=/home/qing/bochs/boot/mbr.bin of=/home/qing/bochs/hd60M.img bs=512 count=1 conv=notrunc
+# Loader
+nasm -I boot/include/ -o boot/loader.bin boot/loader.S
+# 写入磁盘
+dd if=/home/qing/bochs/boot/loader.bin of=/home/qing/bochs/hd60M.img bs=512 count=4 seek=2 conv=notrunc
+# kernal 编译、链接，生成内核elf_i386文件，写入磁盘
+make all 
+# 启动
 bin/bochs -f bochsrc.disk
 
 
