@@ -3,7 +3,7 @@
 %define ZERO push 0     ;为了栈中格式统一，如果 CPU 在异常中没有自动压入错误码，这里填充 0
 
 extern idt_table                        ; 声明 c 注册的中断处理函数数组
-; extern syscall_table  ; 用来装填子功能实现函数的地址的
+extern syscall_table  ; 用来装填子功能实现函数的地址的
 ;extern put_str          ;声明外部函数，告诉编译器在链接的时候可以找到
 
 section .data
@@ -62,40 +62,40 @@ intr_exit:
     iretd
 
 ; ;--------------   0x80号中断   ----------------
-; [bits 32]
+[bits 32]
 
-; section .text
-; global syscall_handler
-; syscall_handler:   ;系统调用的入口  
+section .text
+global syscall_handler
+syscall_handler:   ;系统调用的入口  
 
-;     ; 1. 保存上下文环境
-;     push 0                      ; 压入 0, 使栈中格式统一(充当错误码), 占位符
+    ; 1. 保存上下文环境
+    push 0                      ; 压入 0, 使栈中格式统一(充当错误码), 占位符
 
-;     push ds
-;     push es
-;     push fs
-;     push gs
-;     pushad                      ; PUSHAD 指令压入 32 位寄存器, 其入栈顺序是:
-;                                 ; EAX, ECS, EDX, EBX, ESP, EBP, ESI, EDI
+    push ds
+    push es
+    push fs
+    push gs
+    pushad                      ; PUSHAD 指令压入 32 位寄存器, 其入栈顺序是:
+                                ; EAX, ECS, EDX, EBX, ESP, EBP, ESI, EDI
 
-;     push 0x80                   ; 此位置压入 0x80(中断号) 也是为了保持统一的栈格式
-
-
-;     ; 2. 为系统调用子功能传入参数
-;     push edx                    ; 系统调用中第 3 个参数
-;     push ecx                    ; 系统调用中第 2 个参数
-;     push ebx                    ; 系统调用中第 1 个参数
+    push 0x80                   ; 此位置压入 0x80(中断号) 也是为了保持统一的栈格式
 
 
-;     ; 3. 调用子功能处理函数
-;     call [syscall_table + eax * 4]
-;     add esp, 12                 ; 跳过上面的 3 个参数
+    ; 2. 为系统调用子功能传入参数
+    push edx                    ; 系统调用中第 3 个参数
+    push ecx                    ; 系统调用中第 2 个参数
+    push ebx                    ; 系统调用中第 1 个参数
 
 
-;     ; 4. 将 call 调用后的返回值存入待当前内核栈中 eax 的位置
-;     mov [esp + 8 * 4], eax      ; 跨过 0x80, pushad 的 eax 后的寄存器(7个)共8个字节, 即为eax的值的位置
-;                                 ; 覆盖了原 eax, 之后 popad 之后返回用户态, 用户进程便得到了系统调用函数的返回值
-;     jmp intr_exit               ; intr_exit 返回, 恢复上下文
+    ; 3. 调用子功能处理函数
+    call [syscall_table + eax * 4]
+    add esp, 12                 ; 跳过上面的 3 个参数
+
+
+    ; 4. 将 call 调用后的返回值存入待当前内核栈中 eax 的位置
+    mov [esp + 8 * 4], eax      ; 跨过 0x80, pushad 的 eax 后的寄存器(7个)共8个字节, 即为eax的值的位置
+                                ; 覆盖了原 eax, 之后 popad 之后返回用户态, 用户进程便得到了系统调用函数的返回值
+    jmp intr_exit               ; intr_exit 返回, 恢复上下文
 
 
 
@@ -158,84 +158,84 @@ VECTOR 0x2d, ZERO	; fpu浮点单元异常
 VECTOR 0x2e, ZERO	; 硬盘
 VECTOR 0x2f, ZERO	; 保留
 
-; VECTOR 0x30 ,ZERO
-; VECTOR 0x31 ,ZERO
-; VECTOR 0x32 ,ZERO
-; VECTOR 0x33 ,ZERO
-; VECTOR 0x34 ,ZERO
-; VECTOR 0x35 ,ZERO
-; VECTOR 0x36 ,ZERO
-; VECTOR 0x37 ,ZERO
-; VECTOR 0x38 ,ZERO
-; VECTOR 0x39 ,ZERO
-; VECTOR 0x3A ,ZERO
-; VECTOR 0x3B ,ZERO
-; VECTOR 0x3C ,ZERO
-; VECTOR 0x3D ,ZERO
-; VECTOR 0x3E ,ZERO
-; VECTOR 0x3F ,ZERO
-; VECTOR 0x40 ,ZERO
-; VECTOR 0x41 ,ZERO
-; VECTOR 0x42 ,ZERO
-; VECTOR 0x43 ,ZERO
-; VECTOR 0x44 ,ZERO
-; VECTOR 0x45 ,ZERO
-; VECTOR 0x46 ,ZERO
-; VECTOR 0x47 ,ZERO
-; VECTOR 0x48 ,ZERO
-; VECTOR 0x49 ,ZERO
-; VECTOR 0x4A ,ZERO
-; VECTOR 0x4B ,ZERO
-; VECTOR 0x4C ,ZERO
-; VECTOR 0x4D ,ZERO
-; VECTOR 0x4E ,ZERO
-; VECTOR 0x4F ,ZERO
-; VECTOR 0x50 ,ZERO
-; VECTOR 0x51 ,ZERO
-; VECTOR 0x52 ,ZERO
-; VECTOR 0x53 ,ZERO
-; VECTOR 0x54 ,ZERO
-; VECTOR 0x55 ,ZERO
-; VECTOR 0x56 ,ZERO
-; VECTOR 0x57 ,ZERO
-; VECTOR 0x58 ,ZERO
-; VECTOR 0x59 ,ZERO
-; VECTOR 0x5A ,ZERO
-; VECTOR 0x5B ,ZERO
-; VECTOR 0x5C ,ZERO
-; VECTOR 0x5D ,ZERO
-; VECTOR 0x5E ,ZERO
-; VECTOR 0x5F ,ZERO
-; VECTOR 0x61 ,ZERO
-; VECTOR 0x62 ,ZERO
-; VECTOR 0x63 ,ZERO
-; VECTOR 0x64 ,ZERO
-; VECTOR 0x65 ,ZERO
-; VECTOR 0x66 ,ZERO
-; VECTOR 0x67 ,ZERO
-; VECTOR 0x68 ,ZERO
-; VECTOR 0x69 ,ZERO
-; VECTOR 0x6A ,ZERO
-; VECTOR 0x6B ,ZERO
-; VECTOR 0x6C ,ZERO
-; VECTOR 0x6D ,ZERO
-; VECTOR 0x6E ,ZERO
-; VECTOR 0x6F ,ZERO
-; VECTOR 0x70 ,ZERO
-; VECTOR 0x71 ,ZERO
-; VECTOR 0x72 ,ZERO
-; VECTOR 0x73 ,ZERO
-; VECTOR 0x74 ,ZERO
-; VECTOR 0x75 ,ZERO
-; VECTOR 0x76 ,ZERO
-; VECTOR 0x77 ,ZERO
-; VECTOR 0x78 ,ZERO
-; VECTOR 0x79 ,ZERO
-; VECTOR 0x7A ,ZERO
-; VECTOR 0x7B ,ZERO
-; VECTOR 0x7C ,ZERO
-; VECTOR 0x7D ,ZERO
-; VECTOR 0x7E ,ZERO
-; VECTOR 0x7F ,ZERO
-; VECTOR 0x80 ,ZERO
+VECTOR 0x30 ,ZERO
+VECTOR 0x31 ,ZERO
+VECTOR 0x32 ,ZERO
+VECTOR 0x33 ,ZERO
+VECTOR 0x34 ,ZERO
+VECTOR 0x35 ,ZERO
+VECTOR 0x36 ,ZERO
+VECTOR 0x37 ,ZERO
+VECTOR 0x38 ,ZERO
+VECTOR 0x39 ,ZERO
+VECTOR 0x3A ,ZERO
+VECTOR 0x3B ,ZERO
+VECTOR 0x3C ,ZERO
+VECTOR 0x3D ,ZERO
+VECTOR 0x3E ,ZERO
+VECTOR 0x3F ,ZERO
+VECTOR 0x40 ,ZERO
+VECTOR 0x41 ,ZERO
+VECTOR 0x42 ,ZERO
+VECTOR 0x43 ,ZERO
+VECTOR 0x44 ,ZERO
+VECTOR 0x45 ,ZERO
+VECTOR 0x46 ,ZERO
+VECTOR 0x47 ,ZERO
+VECTOR 0x48 ,ZERO
+VECTOR 0x49 ,ZERO
+VECTOR 0x4A ,ZERO
+VECTOR 0x4B ,ZERO
+VECTOR 0x4C ,ZERO
+VECTOR 0x4D ,ZERO
+VECTOR 0x4E ,ZERO
+VECTOR 0x4F ,ZERO
+VECTOR 0x50 ,ZERO
+VECTOR 0x51 ,ZERO
+VECTOR 0x52 ,ZERO
+VECTOR 0x53 ,ZERO
+VECTOR 0x54 ,ZERO
+VECTOR 0x55 ,ZERO
+VECTOR 0x56 ,ZERO
+VECTOR 0x57 ,ZERO
+VECTOR 0x58 ,ZERO
+VECTOR 0x59 ,ZERO
+VECTOR 0x5A ,ZERO
+VECTOR 0x5B ,ZERO
+VECTOR 0x5C ,ZERO
+VECTOR 0x5D ,ZERO
+VECTOR 0x5E ,ZERO
+VECTOR 0x5F ,ZERO
+VECTOR 0x61 ,ZERO
+VECTOR 0x62 ,ZERO
+VECTOR 0x63 ,ZERO
+VECTOR 0x64 ,ZERO
+VECTOR 0x65 ,ZERO
+VECTOR 0x66 ,ZERO
+VECTOR 0x67 ,ZERO
+VECTOR 0x68 ,ZERO
+VECTOR 0x69 ,ZERO
+VECTOR 0x6A ,ZERO
+VECTOR 0x6B ,ZERO
+VECTOR 0x6C ,ZERO
+VECTOR 0x6D ,ZERO
+VECTOR 0x6E ,ZERO
+VECTOR 0x6F ,ZERO
+VECTOR 0x70 ,ZERO
+VECTOR 0x71 ,ZERO
+VECTOR 0x72 ,ZERO
+VECTOR 0x73 ,ZERO
+VECTOR 0x74 ,ZERO
+VECTOR 0x75 ,ZERO
+VECTOR 0x76 ,ZERO
+VECTOR 0x77 ,ZERO
+VECTOR 0x78 ,ZERO
+VECTOR 0x79 ,ZERO
+VECTOR 0x7A ,ZERO
+VECTOR 0x7B ,ZERO
+VECTOR 0x7C ,ZERO
+VECTOR 0x7D ,ZERO
+VECTOR 0x7E ,ZERO
+VECTOR 0x7F ,ZERO
+VECTOR 0x80 ,ZERO
 

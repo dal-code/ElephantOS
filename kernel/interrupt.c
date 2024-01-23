@@ -10,13 +10,13 @@
 #define PIC_S_CTRL 0xA0         //从片
 #define PIC_S_DATA 0xA1
 
-#define IDT_DESC_CNT 0x30            // 目前总共支持的中断数 48个 32 + 16 0x30. 加入系统中断0x80.从0开始计数
+#define IDT_DESC_CNT 0x81        // 目前总共支持的中断数 48个 32 + 16 0x30. 加入系统中断0x80.从0开始计数
 
 #define EFLAGS_IF       0x00000200      // eflags中的 IF 位为 1
 #define GET_EFLAGS(EFLAG_VAR) asm volatile("pushfl; popl %0": "=g"(EFLAG_VAR))
 
 
-// extern uint32_t syscall_handler(void);
+extern uint32_t syscall_handler(void);
 
 /*中断门描述符结构体*/
 struct gate_desc {
@@ -79,13 +79,12 @@ static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler 
 
 /*初始化中断描述符表*/
 static void idt_desc_init(void) {
-   //  int i, lastindex = IDT_DESC_CNT - 1;
-   int i;
-   for (i = 0; i < IDT_DESC_CNT; i++) {
+    int i, lastindex = IDT_DESC_CNT - 1;
+    for (i = 0; i < IDT_DESC_CNT; i++) {
         make_idt_desc(&idt[i], IDT_DESC_ATTR_DPL0, intr_entry_table[i]); // IDT_DESC_DPL0在global.h定义的
-   }
+    }
 
-//     make_idt_desc(&idt[lastindex], IDT_DESC_ATTR_DPL3, syscall_handler);
+     make_idt_desc(&idt[lastindex], IDT_DESC_ATTR_DPL3, syscall_handler);
 
     put_str("    idt_desc_init done\n");
     
@@ -218,6 +217,5 @@ void idt_init() {
     asm volatile("lidt %0" : : "m"(idt_operand));
     put_str("idt_init_ done\n");
 }
-
 
 
