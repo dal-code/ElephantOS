@@ -24,7 +24,7 @@ $(BUILD_DIR)/main.o: kernel/main.c lib/kernel/print.h \
         lib/stdint.h kernel/init.h lib/string.h kernel/memory.h \
         thread/thread.h kernel/interrupt.h device/console.h \
         device/keyboard.h device/ioqueue.h userprog/process.h \
-        lib/user/syscall.h userprog/syscall-init.h
+        lib/user/syscall.h userprog/syscall-init.h lib/stdio.h
 	$(CC) $(CFLAGS) $< -o $@
 
 
@@ -42,7 +42,8 @@ $(BUILD_DIR)/interrupt.o: kernel/interrupt.c kernel/interrupt.h \
 
 
 $(BUILD_DIR)/timer.o: device/timer.c device/timer.h lib/stdint.h \
-        			  lib/kernel/io.h lib/kernel/print.h
+        			  lib/kernel/io.h lib/kernel/print.h thread/thread.h kernel/interrupt.h \
+					  kernel/debug.h
 	$(CC) $(CFLAGS) $< -o $@
 
 
@@ -57,7 +58,8 @@ $(BUILD_DIR)/string.o: lib/string.c lib/string.h \
 
 
 $(BUILD_DIR)/memory.o: kernel/memory.c kernel/memory.h \
-					   lib/stdint.h lib/kernel/bitmap.h kernel/debug.h lib/string.h
+					   lib/stdint.h lib/kernel/bitmap.h kernel/debug.h lib/string.h \
+					   lib/kernel/list.h
 	$(CC) $(CFLAGS) $< -o $@
 	
 
@@ -68,7 +70,8 @@ $(BUILD_DIR)/bitmap.o: lib/kernel/bitmap.c lib/kernel/bitmap.h \
 
 $(BUILD_DIR)/thread.o: thread/thread.c thread/thread.h  thread/sync.h \
 					   lib/stdint.h lib/string.h kernel/global.h kernel/memory.h \
-					   kernel/debug.h kernel/interrupt.h lib/kernel/print.h
+					   kernel/debug.h kernel/interrupt.h lib/kernel/print.h \
+					   userprog/process.h
 	$(CC) $(CFLAGS) $< -o $@
 
 
@@ -108,7 +111,8 @@ $(BUILD_DIR)/process.o: userprog/process.c userprog/process.h \
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/syscall-init.o: userprog/syscall-init.c userprog/syscall-init.h \
-	lib/user/syscall.h lib/stdint.h lib/kernel/print.h kernel/interrupt.h thread/thread.h
+	lib/user/syscall.h lib/stdint.h lib/kernel/print.h kernel/interrupt.h thread/thread.h \
+	kernel/memory.h
 	$(CC) $(CFLAGS) $< -o $@
 	
 $(BUILD_DIR)/syscall.o: lib/user/syscall.c lib/user/syscall.h 

@@ -11,7 +11,7 @@
         "stdint.h": "c",
         "bitmap.h": "c"
     },
-    "editor.fontSize": 16,
+    "editor.fontSize": 18,
     "debug.console.fontSize": 16,
     "terminal.integrated.fontSize": 18,
     "editor.fontFamily": "Consolas, 'Fira Code', monospace"

@@ -143,7 +143,8 @@ void process_execute(void* filename, char* name) {
     // 初始化线程栈 thread_stack, start_process为进程待执行函数, filename为其参数
     // start_process: 填充用户进程的 intr_stack
     thread_create(thread, start_process, filename);
-    thread->pgdir = create_page_dir();              // 创建进程的页目录表
+    thread->pgdir = create_page_dir();              // 创建进程的页目录表   
+    block_desc_init(thread->u_block_desc);	// 初始化进程的内存块描述符
 
     enum intr_status old_status = intr_disable();   // 关中断
     ASSERT(!elem_find(&thread_ready_list, &thread->general_tag));

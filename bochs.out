@@ -31,7 +31,7 @@
 00000000000i[      ]   SB16 support: no
 00000000000i[      ]   USB support: no
 00000000000i[      ]   VGA extension support: vbe
-00000000000i[MEM0  ] allocated memory at 0x7f716a3d7010. after alignment, vector=0x7f716a3d8000
+00000000000i[MEM0  ] allocated memory at 0x7f8411735010. after alignment, vector=0x7f8411736000
 00000000000i[MEM0  ] 32.00MB
 00000000000i[MEM0  ] mem block size = 0x00100000, blocks=32
 00000000000i[MEM0  ] rom at 0xfffe0000/131072 ('/home/qing/bochs/share/bochs/BIOS-bochs-latest')
@@ -41,7 +41,7 @@
 00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 1, function 0
 00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
 00000000000i[CMOS  ] Using local time for initial clock
-00000000000i[CMOS  ] Setting initial clock to: Tue Jan 23 22:45:45 2024 (time0=1706021145)
+00000000000i[CMOS  ] Setting initial clock to: Wed Jan 24 16:18:53 2024 (time0=1706084333)
 00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
 00000000000i[DMA   ] channel 4 used by cascade
 00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
@@ -176,6 +176,6 @@
 00001529240i[BXVGA ] VBE known Display Interface b0c5
 00001532165i[VBIOS ] VBE Bios $Id: vbe.c,v 1.65 2014/07/08 18:02:25 vruppert Exp $
 00001876642i[BIOS  ] ata0-0: PCHS=121/16/63 translation=none LCHS=121/16/63
+00003566384i[XGUI  ] charmap update. Font Height is 16
 00005753848i[BIOS  ] IDE time out
-00006719164i[XGUI  ] charmap update. Font Height is 16
 00017844208i[BIOS  ] Booting from 0000:7c00
