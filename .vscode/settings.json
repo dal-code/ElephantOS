@@ -9,7 +9,11 @@
         "global.h": "c",
         "process.h": "c",
         "stdint.h": "c",
-        "bitmap.h": "c"
+        "bitmap.h": "c",
+        "string.h": "c",
+        "ide.h": "c",
+        "stdio.h": "c",
+        "list.h": "c"
     },
     "editor.fontSize": 18,
     "debug.console.fontSize": 16,

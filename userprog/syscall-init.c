@@ -5,7 +5,8 @@
 #include "interrupt.h"
 #include "../thread/thread.h"
 #include "../kernel/memory.h"
-
+#include "console.h"
+#include "string.h"
 #define syscall_nr 32
 typedef void* syscall;
 syscall syscall_table[syscall_nr];

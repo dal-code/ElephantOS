@@ -16,7 +16,9 @@
 #define READ_WRITE_LATCH        3                                   // 读写方式, 先读写低8位, 再读写高8位
 #define PIT_CONTROL_PORT        0x43                                // 控制字寄存器端口
 
- uint32_t ticks; // ticks 是内核自中断开启以来总共的嘀嗒数
+#define mil_seconds_per_intr (1000 / IRQ0_FREQUENCY)	// 每多少毫秒发生一次中断
+
+uint32_t ticks; // ticks 是内核自中断开启以来总共的嘀嗒数
 
 /* 把操作的计数器counter_no、读写锁属性rwl、计数器模式counter_mode写入模式控制寄存器井赋予初始值counter_value */
 static void frequency_set(uint8_t counter_port, \
@@ -53,6 +55,24 @@ static void intr_timer_handler(void) {
     }
     return;
 }
+
+// 以 tick 为单位的 sleep, 任何时间形式的 sleep 会转换此 ticks 形式
+static void ticks_to_sleep(uint32_t sleep_ticks) {
+   uint32_t start_tick = ticks;
+   // 若间隔的 ticks 数不够便让出 cpu
+   while (ticks - start_tick < sleep_ticks) {
+      thread_yield();
+   }
+}
+
+// 以毫秒为单位的 sleep
+void mtime_sleep(uint32_t m_seconds) {
+   // 计算要休眠的 ticks数 
+   uint32_t sleep_ticks = DIV_ROUND_UP(m_seconds, mil_seconds_per_intr);
+   ASSERT(sleep_ticks > 0);
+   ticks_to_sleep(sleep_ticks);
+}
+
 
 /* 初始化 PIT8253 */
 void timer_init() {
