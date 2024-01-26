@@ -13,7 +13,8 @@
         "string.h": "c",
         "ide.h": "c",
         "stdio.h": "c",
-        "list.h": "c"
+        "list.h": "c",
+        "syscall.h": "c"
     },
     "editor.fontSize": 18,
     "debug.console.fontSize": 16,

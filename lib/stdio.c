@@ -99,12 +99,12 @@ uint32_t sprintf(char* buf, const char* format, ...) {
 }
 
 
-/* 格式化输出字符串 format */
+/* 格式化输出字符串format */
 uint32_t printf(const char* format, ...) {
-    va_list args;
-    va_start(args, format);     // 使 args 指向 format
-    char buf[1024] = {0};       // 用于存储拼接后的字符串
-    vsprintf(buf, format, args);
-    va_end(args);
-    return write(buf);			// 在终端输出 buf 中的字符串
+   va_list args;
+   va_start(args, format);	       // 使args指向format
+   char buf[1024] = {0};	       // 用于存储拼接后的字符串
+   vsprintf(buf, format, args);
+   va_end(args);
+   return write(1, buf, strlen(buf)); 
 }
