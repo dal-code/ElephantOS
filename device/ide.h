@@ -6,7 +6,7 @@
 #include "../lib/kernel/bitmap.h"
 #include "list.h"
 
-/* 分区结构 */
+/* 分区结构:分区表结构 */
 struct partition {
     uint32_t start_lba;             // 起始扇区
     uint32_t sec_cnt;               // 扇区数
@@ -34,8 +34,8 @@ struct disk {
 struct ide_channel {
     char name[8];               // 本 ata 通道名称
     uint16_t port_base;         // 本通道的起始端口号
-    uint8_t irq_no;             // 本通道所用的中断号
-    struct lock lock;           // 通道锁
+    uint8_t irq_no;             // 本通道所用的中断号，实现中断处理使用
+    struct lock lock;           // 通道锁，通道有两块硬盘，但是只有一个中断号，一次只允许一个硬盘操作，用锁实现独享通道
     bool expecting_intr;        // 表示等待硬盘的中断
     struct semaphore disk_done; // 用于阻塞、唤醒驱动程序
     struct disk devices[2];     // 一个通道上连接两个硬盘, 一主一从

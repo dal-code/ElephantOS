@@ -18,6 +18,7 @@ struct partition* cur_part;	 // 默认情况下操作的是哪个分区
 /* 在分区链表中找到名为part_name的分区,并将其指针赋值给cur_part */
 static bool mount_partition(struct list_elem* pelem, int arg) {
    char* part_name = (char*)arg;
+   //pelem是分区结构partition 中 part_tag的地址，获得分区地址
    struct partition* part = elem2entry(struct partition, part_tag, pelem);
    if (!strcmp(part->name, part_name)) {
       cur_part = part;
@@ -29,7 +30,7 @@ static bool mount_partition(struct list_elem* pelem, int arg) {
       /* 在内存中创建分区cur_part的超级块 */
       cur_part->sb = (struct super_block*)sys_malloc(sizeof(struct super_block));
       if (cur_part->sb == NULL) {
-	 PANIC("alloc memory failed!");
+	      PANIC("alloc memory failed!");
       }
 
       /* 读入超级块 */
@@ -42,7 +43,7 @@ static bool mount_partition(struct list_elem* pelem, int arg) {
       /**********     将硬盘上的块位图读入到内存    ****************/
       cur_part->block_bitmap.bits = (uint8_t*)sys_malloc(sb_buf->block_bitmap_sects * SECTOR_SIZE);
       if (cur_part->block_bitmap.bits == NULL) {
-	 PANIC("alloc memory failed!");
+	      PANIC("alloc memory failed!");
       }
       cur_part->block_bitmap.btmp_bytes_len = sb_buf->block_bitmap_sects * SECTOR_SIZE;
       /* 从硬盘上读入块位图到分区的block_bitmap.bits */
@@ -52,7 +53,7 @@ static bool mount_partition(struct list_elem* pelem, int arg) {
       /**********     将硬盘上的inode位图读入到内存    ************/
       cur_part->inode_bitmap.bits = (uint8_t*)sys_malloc(sb_buf->inode_bitmap_sects * SECTOR_SIZE);
       if (cur_part->inode_bitmap.bits == NULL) {
-	 PANIC("alloc memory failed!");
+	      PANIC("alloc memory failed!");
       }
       cur_part->inode_bitmap.btmp_bytes_len = sb_buf->inode_bitmap_sects * SECTOR_SIZE;
       /* 从硬盘上读入inode位图到分区的inode_bitmap.bits */
@@ -71,19 +72,23 @@ static bool mount_partition(struct list_elem* pelem, int arg) {
 
 /* 格式化分区,也就是初始化分区的元信息,创建文件系统 */
 static void partition_format(struct partition* part) {
-/* 为方便实现,一个块大小是一扇区 */
+   /* 为方便实现,一个块大小是一扇区 */
    uint32_t boot_sector_sects = 1;	  
    uint32_t super_block_sects = 1;
-   uint32_t inode_bitmap_sects = DIV_ROUND_UP(MAX_FILES_PER_PART, BITS_PER_SECTOR);	   // I结点位图占用的扇区数.最多支持4096个文件
+   // I结点位图占用的扇区数.最多支持4096个文件
+   uint32_t inode_bitmap_sects = DIV_ROUND_UP(MAX_FILES_PER_PART, BITS_PER_SECTOR);	 
+   // inode 数组占用的块数量  
    uint32_t inode_table_sects = DIV_ROUND_UP(((sizeof(struct inode) * MAX_FILES_PER_PART)), SECTOR_SIZE);
    uint32_t used_sects = boot_sector_sects + super_block_sects + inode_bitmap_sects + inode_table_sects;
    uint32_t free_sects = part->sec_cnt - used_sects;  
 
 /************** 简单处理块位图占据的扇区数 ***************/
    uint32_t block_bitmap_sects;
+   // 块位图占据的大小
    block_bitmap_sects = DIV_ROUND_UP(free_sects, BITS_PER_SECTOR);
    /* block_bitmap_bit_len是位图中位的长度,也是可用块的数量 */
    uint32_t block_bitmap_bit_len = free_sects - block_bitmap_sects; 
+   // 可用块数量 / 4094 得到块位图的扇区数（块数）
    block_bitmap_sects = DIV_ROUND_UP(block_bitmap_bit_len, BITS_PER_SECTOR); 
 /*********************************************************/
    
@@ -104,6 +109,7 @@ static void partition_format(struct partition* part) {
    sb.inode_table_sects = inode_table_sects; 
 
    sb.data_start_lba = sb.inode_table_lba + sb.inode_table_sects;
+   // 根目录的inode 号
    sb.root_inode_no = 0;
    sb.dir_entry_size = sizeof(struct dir_entry);
 
@@ -117,9 +123,11 @@ static void partition_format(struct partition* part) {
    ide_write(hd, part->start_lba + 1, &sb, 1);
    printk("   super_block_lba:0x%x\n", part->start_lba + 1);
 
-/* 找出数据量最大的元信息,用其尺寸做存储缓冲区*/
+   /* 找出数据量最大的元信息,用其尺寸做存储缓冲区*/  //比较空闲块位图的扇区数和inode位图的扇区数，取其中较大的那个
    uint32_t buf_size = (sb.block_bitmap_sects >= sb.inode_bitmap_sects ? sb.block_bitmap_sects : sb.inode_bitmap_sects);
+   // 再和inode数组的扇区数比大小，然后乘以扇区大小512 byte
    buf_size = (buf_size >= sb.inode_table_sects ? buf_size : sb.inode_table_sects) * SECTOR_SIZE;
+   // 从推中申请内存
    uint8_t* buf = (uint8_t*)sys_malloc(buf_size);	// 申请的内存由内存管理系统清0后返回
    
 /**************************************
@@ -129,7 +137,8 @@ static void partition_format(struct partition* part) {
    buf[0] |= 0x01;       // 第0个块预留给根目录,位图中先占位
    uint32_t block_bitmap_last_byte = block_bitmap_bit_len / 8;
    uint8_t  block_bitmap_last_bit  = block_bitmap_bit_len % 8;
-   uint32_t last_size = SECTOR_SIZE - (block_bitmap_last_byte % SECTOR_SIZE);	     // last_size是位图所在最后一个扇区中，不足一扇区的其余部分
+   // last_size是位图所在最后一个扇区中，不足一扇区的其余部分
+   uint32_t last_size = SECTOR_SIZE - (block_bitmap_last_byte % SECTOR_SIZE);	     
 
    /* 1 先将位图最后一字节到其所在的扇区的结束全置为1,即超出实际块数的部分直接置为已占用*/
    memset(&buf[block_bitmap_last_byte], 0xff, last_size);
@@ -221,7 +230,7 @@ int32_t path_depth_cnt(char* pathname) {
       depth++;
       memset(name, 0, MAX_FILE_NAME_LEN);
       if (p) {	     // 如果p不等于NULL,继续分析路径
-	p  = path_parse(p, name);
+	      p  = path_parse(p, name);
       }
    }
    return depth;
@@ -263,26 +272,26 @@ static int search_file(const char* pathname, struct path_search_record* searched
 
       /* 在所给的目录中查找文件 */
       if (search_dir_entry(cur_part, parent_dir, name, &dir_e)) {
-	 memset(name, 0, MAX_FILE_NAME_LEN);
-	 /* 若sub_path不等于NULL,也就是未结束时继续拆分路径 */
-	 if (sub_path) {
-	    sub_path = path_parse(sub_path, name);
-	 }
+	      memset(name, 0, MAX_FILE_NAME_LEN);
+	      /* 若sub_path不等于NULL,也就是未结束时继续拆分路径 */
+         if (sub_path) {
+            sub_path = path_parse(sub_path, name);
+	      }
 
-	 if (FT_DIRECTORY == dir_e.f_type) {   // 如果被打开的是目录
-	    parent_inode_no = parent_dir->inode->i_no;
-	    dir_close(parent_dir);
-	    parent_dir = dir_open(cur_part, dir_e.i_no); // 更新父目录
-	    searched_record->parent_dir = parent_dir;
-	    continue;
-	 } else if (FT_REGULAR == dir_e.f_type) {	 // 若是普通文件
-	    searched_record->file_type = FT_REGULAR;
-	    return dir_e.i_no;
-	 }
+         if (FT_DIRECTORY == dir_e.f_type) {   // 如果被打开的是目录
+            parent_inode_no = parent_dir->inode->i_no;
+            dir_close(parent_dir);
+            parent_dir = dir_open(cur_part, dir_e.i_no); // 更新父目录
+            searched_record->parent_dir = parent_dir;
+            continue;
+         } else if (FT_REGULAR == dir_e.f_type) {	 // 若是普通文件
+            searched_record->file_type = FT_REGULAR;
+            return dir_e.i_no;
+         }
       } else {		   //若找不到,则返回-1
 	 /* 找不到目录项时,要留着parent_dir不要关闭,
 	  * 若是创建新文件的话需要在parent_dir中创建 */
-	 return -1;
+	      return -1;
       }
    }
 
@@ -297,7 +306,7 @@ static int search_file(const char* pathname, struct path_search_record* searched
 
 /* 打开或创建文件成功后,返回文件描述符,否则返回-1 */
 int32_t sys_open(const char* pathname, uint8_t flags) {
-  /* 对目录要用dir_open,这里只有open文件 */
+   /* 对目录要用dir_open,这里只有open文件 */
    if (pathname[strlen(pathname) - 1] == '/') {
       printk("can`t open a directory %s\n",pathname);
       return -1;
@@ -326,7 +335,7 @@ int32_t sys_open(const char* pathname, uint8_t flags) {
    /* 先判断是否把pathname的各层目录都访问到了,即是否在某个中间目录就失败了 */
    if (pathname_depth != path_searched_depth) {   // 说明并没有访问到全部的路径,某个中间目录是不存在的
       printk("cannot access %s: Not a directory, subpath %s is`t exist\n", \
-	    pathname, searched_record.searched_path);
+      pathname, searched_record.searched_path);
       dir_close(searched_record.parent_dir);
       return -1;
    }
@@ -346,14 +355,14 @@ int32_t sys_open(const char* pathname, uint8_t flags) {
 
    switch (flags & O_CREAT) {
       case O_CREAT:
-	 printk("creating file\n");
-	 fd = file_create(searched_record.parent_dir, (strrchr(pathname, '/') + 1), flags);
-	 dir_close(searched_record.parent_dir);
-	 break;
+         printk("creating file\n");
+         fd = file_create(searched_record.parent_dir, (strrchr(pathname, '/') + 1), flags);
+         dir_close(searched_record.parent_dir);
+         break;
       default:
-   /* 其余情况均为打开已存在文件:
-    * O_RDONLY,O_WRONLY,O_RDWR */
-	 fd = file_open(inode_no, flags);
+         /* 其余情况均为打开已存在文件:
+         * O_RDONLY,O_WRONLY,O_RDWR */
+         fd = file_open(inode_no, flags);
    }
 
    /* 此fd是指任务pcb->fd_table数组中的元素下标,
@@ -417,39 +426,39 @@ void filesys_init() {
    while (channel_no < channel_cnt) {
       dev_no = 0;
       while(dev_no < 2) {
-	 if (dev_no == 0) {   // 跨过裸盘hd60M.img
-	    dev_no++;
-	    continue;
-	 }
-	 struct disk* hd = &channels[channel_no].devices[dev_no];
-	 struct partition* part = hd->prim_parts;
-	 while(part_idx < 12) {   // 4个主分区+8个逻辑
-	    if (part_idx == 4) {  // 开始处理逻辑分区
-	       part = hd->logic_parts;
-	    }
+         if (dev_no == 0) {   // 跨过裸盘hd60M.img
+            dev_no++;
+            continue;
+	      }
+         struct disk* hd = &channels[channel_no].devices[dev_no];
+         struct partition* part = hd->prim_parts;
+         while(part_idx < 12) {   // 4个主分区+8个逻辑
+            if (part_idx == 4) {  // 开始处理逻辑分区
+               part = hd->logic_parts;
+	         }
 	 
-	 /* channels数组是全局变量,默认值为0,disk属于其嵌套结构,
-	  * partition又为disk的嵌套结构,因此partition中的成员默认也为0.
-	  * 若partition未初始化,则partition中的成员仍为0. 
-	  * 下面处理存在的分区. */
-	    if (part->sec_cnt != 0) {  // 如果分区存在
-	       memset(sb_buf, 0, SECTOR_SIZE);
+            /* channels数组是全局变量,默认值为0,disk属于其嵌套结构,
+            * partition又为disk的嵌套结构,因此partition中的成员默认也为0.
+            * 若partition未初始化,则partition中的成员仍为0. 
+            * 下面处理存在的分区. */
+            if (part->sec_cnt != 0) {  // 如果分区存在
+               memset(sb_buf, 0, SECTOR_SIZE);
 
-	       /* 读出分区的超级块,根据魔数是否正确来判断是否存在文件系统 */
-	       ide_read(hd, part->start_lba + 1, sb_buf, 1);   
+               /* 读出分区的超级块,根据魔数是否正确来判断是否存在文件系统 */
+               ide_read(hd, part->start_lba + 1, sb_buf, 1);   
 
-	       /* 只支持自己的文件系统.若磁盘上已经有文件系统就不再格式化了 */
-	       if (sb_buf->magic == 0x19590318) {
-		  printk("%s has filesystem\n", part->name);
-	       } else {			  // 其它文件系统不支持,一律按无文件系统处理
-		  printk("formatting %s`s partition %s......\n", hd->name, part->name);
-		  partition_format(part);
-	       }
-	    }
-	    part_idx++;
-	    part++;	// 下一分区
-	 }
-	 dev_no++;	// 下一磁盘
+               /* 只支持自己的文件系统.若磁盘上已经有文件系统就不再格式化了 */
+               if (sb_buf->magic == 0x19590318) {
+                  printk("%s has filesystem\n", part->name);
+               } else {			  // 其它文件系统不支持,一律按无文件系统处理
+                  printk("formatting %s`s partition %s......\n", hd->name, part->name);
+                  partition_format(part);
+	            }
+	         }
+            part_idx++;
+            part++;	// 下一分区
+	      }
+	      dev_no++;	// 下一磁盘
       }
       channel_no++;	// 下一通道
    }

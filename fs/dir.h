@@ -8,11 +8,11 @@
 
 #define MAX_FILE_NAME_LEN  16	 // 最大文件名长度
 
-/* 目录结构 */
+/* 目录结构 只用于与目录相关的操作，不在磁盘上存在，用过就释放了*/
 struct dir {
    struct inode* inode;   
    uint32_t dir_pos;	  // 记录在目录内的偏移
-   uint8_t dir_buf[512];  // 目录的数据缓存
+   uint8_t dir_buf[512];  // 目录的数据缓存，存储返回的目录项
 };
 
 /* 目录项结构 */

@@ -21,7 +21,7 @@ enum std_fd {
 
 /* 位图类型 */
 enum bitmap_type {
-   INODE_BITMAP,     // inode位图
+   INODE_BITMAP,       // inode位图
    BLOCK_BITMAP	     // 块位图
 };
 

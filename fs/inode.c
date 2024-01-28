@@ -12,8 +12,8 @@
 
 /* 用来存储inode位置 */
 struct inode_position {
-   bool	 two_sec;	// inode是否跨扇区
-   uint32_t sec_lba;	// inode所在的扇区号
+   bool	 two_sec;	   // inode是否跨扇区
+   uint32_t sec_lba;	   // inode所在的扇区号
    uint32_t off_size;	// inode在扇区内的字节偏移量
 };
 
@@ -58,15 +58,15 @@ void inode_sync(struct partition* part, struct inode* inode, void* io_buf) {	 //
 
    char* inode_buf = (char*)io_buf;
    if (inode_pos.two_sec) {	    // 若是跨了两个扇区,就要读出两个扇区再写入两个扇区
-   /* 读写硬盘是以扇区为单位,若写入的数据小于一扇区,要将原硬盘上的内容先读出来再和新数据拼成一扇区后再写入  */
+      /* 读写硬盘是以扇区为单位,若写入的数据小于一扇区,要将原硬盘上的内容先读出来再和新数据拼成一扇区后再写入  */
       ide_read(part->my_disk, inode_pos.sec_lba, inode_buf, 2);	// inode在format中写入硬盘时是连续写入的,所以读入2块扇区
 
-   /* 开始将待写入的inode拼入到这2个扇区中的相应位置 */
+      /* 开始将待写入的inode拼入到这2个扇区中的相应位置 */
       memcpy((inode_buf + inode_pos.off_size), &pure_inode, sizeof(struct inode));
    
-   /* 将拼接好的数据再写入磁盘 */
+      /* 将拼接好的数据再写入磁盘 */
       ide_write(part->my_disk, inode_pos.sec_lba, inode_buf, 2);
-   } else {			    // 若只是一个扇区
+   } else {	// 若只是一个扇区
       ide_read(part->my_disk, inode_pos.sec_lba, inode_buf, 1);
       memcpy((inode_buf + inode_pos.off_size), &pure_inode, sizeof(struct inode));
       ide_write(part->my_disk, inode_pos.sec_lba, inode_buf, 1);
@@ -81,8 +81,8 @@ struct inode* inode_open(struct partition* part, uint32_t inode_no) {
    while (elem != &part->open_inodes.tail) {
       inode_found = elem2entry(struct inode, inode_tag, elem);
       if (inode_found->i_no == inode_no) {
-	 inode_found->i_open_cnts++;
-	 return inode_found;
+         inode_found->i_open_cnts++;
+         return inode_found;
       }
       elem = elem->next;
    }
@@ -93,9 +93,9 @@ struct inode* inode_open(struct partition* part, uint32_t inode_no) {
    /* inode位置信息会存入inode_pos, 包括inode所在扇区地址和扇区内的字节偏移量 */
    inode_locate(part, inode_no, &inode_pos);
 
-/* 为使通过sys_malloc创建的新inode被所有任务共享,
- * 需要将inode置于内核空间,故需要临时
- * 将cur_pbc->pgdir置为NULL */
+   /* 为使通过sys_malloc创建的新inode被所有任务共享,
+   * 需要将inode置于内核空间,故需要临时
+   * 将cur_pbc->pgdir置为NULL */
    struct task_struct* cur = running_thread();
    uint32_t* cur_pagedir_bak = cur->pgdir;
    cur->pgdir = NULL;
@@ -108,8 +108,8 @@ struct inode* inode_open(struct partition* part, uint32_t inode_no) {
    if (inode_pos.two_sec) {	// 考虑跨扇区的情况
       inode_buf = (char*)sys_malloc(1024);
 
-   /* i结点表是被partition_format函数连续写入扇区的,
-    * 所以下面可以连续读出来 */
+      /* i结点表是被partition_format函数连续写入扇区的,
+      * 所以下面可以连续读出来 */
       ide_read(part->my_disk, inode_pos.sec_lba, inode_buf, 2);
    } else {	// 否则,所查找的inode未跨扇区,一个扇区大小的缓冲区足够
       inode_buf = (char*)sys_malloc(512);
@@ -131,9 +131,9 @@ void inode_close(struct inode* inode) {
    enum intr_status old_status = intr_disable();
    if (--inode->i_open_cnts == 0) {
       list_remove(&inode->inode_tag);	  // 将I结点从part->open_inodes中去掉
-   /* inode_open时为实现inode被所有进程共享,
-    * 已经在sys_malloc为inode分配了内核空间,
-    * 释放inode时也要确保释放的是内核内存池 */
+      /* inode_open时为实现inode被所有进程共享,
+      * 已经在sys_malloc为inode分配了内核空间,
+      * 释放inode时也要确保释放的是内核内存池 */
       struct task_struct* cur = running_thread();
       uint32_t* cur_pagedir_bak = cur->pgdir;
       cur->pgdir = NULL;
