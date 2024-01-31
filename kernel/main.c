@@ -22,19 +22,23 @@ int main() {
 	put_str("I am kernel\n");
 	init_all();
 
-    process_execute(u_prog_a, "u_prog_a");
-    process_execute(u_prog_b, "u_prog_b");
-    thread_start("k_thread_a", 31, k_thread_a, "I am thread_a");
-    thread_start("k_thread_b", 31, k_thread_b, "I am thread_b");
+   /********  测试代码  ********/
+   struct stat obj_stat;
+   sys_stat("/", &obj_stat);
 
-    uint32_t fd = sys_open("/file1", O_RDWR);
-    printf("fd:%d\n", fd);
-    sys_write(fd, "hello,world\n", 12);
-    sys_close(fd);
-    printf("%d closed now\n", fd);
+   printf("/`s info\n   i_no:%d\n   size:%d\n   filetype:%s\n", \
+   obj_stat.st_ino, obj_stat.st_size, \
+   obj_stat.st_filetype == 2 ? "directory" : "regular");
 
-    while(1);
-    return 0;
+   sys_stat("/dir1", &obj_stat);
+   
+   printf("/dir1`s info\n   i_no:%d\n   size:%d\n   filetype:%s\n", \
+   obj_stat.st_ino, obj_stat.st_size, \
+   obj_stat.st_filetype == 2 ? "directory" : "regular");
+   /********  测试代码  ********/   
+
+   while(1);
+   return 0;
 }
 
 

@@ -121,7 +121,8 @@ void* sys_malloc(uint32_t size) {
             a->cnt = page_cnt;
             a->large = true;
             lock_release(&mem_pool->lock);
-            return (void*) (a + 1);             // 跨过 arena 大小, 把剩下的内存返回
+            // 跨过 arena 大小, 把剩下的内存返回.1个单位的偏移，单位大小是a的类型大小
+            return (void*) (a + 1);             
         
         } else {
             lock_release(&mem_pool->lock);
